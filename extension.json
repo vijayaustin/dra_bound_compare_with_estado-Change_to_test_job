@@ -1,0 +1,186 @@
+{
+    "id": "ibm.devops.services.pipeline.dra_deploy_extn",
+    "version": 1,
+    "name_key": "ExtName",
+    "desc_key": "ExtDesc",
+    "extension_type": "Deploy",
+    "message_key": "ExtMessage",
+	"inventory_entry_type": "cf",
+	"inputs": [
+        {
+            "type": "Bluemix",
+            "inclusion" : "always"
+        }
+    ],
+    "params": [
+		{
+            "name": "APPLICATION_NAME",
+            "type": "Text",
+            "required": "false",
+            "default_value": "",
+            "label_key": "APPLICATION_NAME_KEY",
+            "desc_key": "APPLICATION_NAME_DESC"
+        },
+		{
+            "name": "DRA_MODE",
+            "type": "Checkbox",
+            "required": "false",
+            "default_value": "false",
+            "label_key": "DRA_MODE_KEY",
+            "desc_key": "DRA_MODE_DESC"
+        },
+		{
+            "name": "SERVICE_LIST",
+            "type": "Text",
+            "required": "false",
+            "default_value": "",
+            "label_key": "SERVICE_LIST_KEY",
+            "desc_key": "SERVICE_LIST_DESC"
+        },
+		{
+            "name": "ENABLE_BOUND_SERVICE",
+            "type": "Checkbox",
+            "required": "false",
+            "default_value": "false",
+            "label_key": "ENABLE_BOUND_SERVICE_KEY",
+            "desc_key": "ENABLE_BOUND_SERVICE_DESC"
+        },
+		{
+            "name": "APP_DESTINATION",
+            "type": "Select",
+            "required": "false",
+            "default_value": "none",
+            "label_key": "APP_DESTINATION_KEY",
+            "desc_key": "APP_DESTINATION_DESC",
+            "options": [
+                {
+                    "label_key": "APP_DESTINATION_OPTION_1_KEY",
+                    "value": "Test"
+                },
+                {
+                    "label_key": "APP_DESTINATION_OPTION_2_KEY",
+                    "value": "Prod"
+                },
+                { 
+                    "label_key": "APP_DESTINATION_OPTION_3_KEY",
+                    "value": "Alpha" 
+                }
+            ]
+        },
+		{
+            "name": "APP_DESTINATION_MANIFEST",
+            "type": "Text",
+            "required": "false",
+            "default_value": "",
+            "label_key": "APP_DESTINATION_MANIFEST_KEY",
+            "desc_key": "APP_DESTINATION_MANIFEST_DESC"
+        },
+		{
+            "name": "ENABLE_COMPARE_APPS",
+            "type": "Checkbox",
+            "required": "false",
+            "default_value": "false",
+            "label_key": "ENABLE_COMPARE_APPS_KEY",
+            "desc_key": "ENABLE_COMPARE_APPS_DESC"
+        },
+		{
+            "name": "APP_NOTDESTINATION",
+            "type": "Select",
+            "required": "false",
+            "default_value": "none",
+            "label_key": "APP_NOTDESTINATION_KEY",
+            "desc_key": "APP_NOTDESTINATION_DESC",
+            "options": [
+                {
+                    "label_key": "APP_NOTDESTINATION_OPTION_1_KEY",
+                    "value": "Test"
+                },
+                {
+                    "label_key": "APP_NOTDESTINATION_OPTION_2_KEY",
+                    "value": "Prod"
+                },
+                { 
+                    "label_key": "APP_NOTDESTINATION_OPTION_3_KEY",
+                    "value": "Alpha" 
+                }
+            ]
+        },
+        {
+            "name": "COMMAND",
+            "type": "TextArea",
+            "required": "true",
+            "default_value" : "#!/bin/bash
+cf push \"${CF_APP}\"",
+            "label_key": "COMMAND_KEY",
+            "desc_key": "COMMAND_DESC"
+        }
+    ],
+    "outputs": [
+        {
+            "type": "Artifacts",
+            "inclusion" : "always"
+        }
+    ],
+    "execution": {
+        "type": "JenkinsDocker",
+        "shell": "#!/bin/bash
+
+set +x
+set +e 
+
+if [ -z \"$CF_APP_NAME\" ]; then
+	export CF_APP=#APPLICATION_NAME#
+else
+    export CF_APP=$CF_APP_NAME
+fi
+
+export DRA_MODE=#DRA_MODE#
+export IDS_TOOLCHAIN_ID=#TOOLCHAIN_ID#
+export DRA_PROJECT_KEY=#TOOLCHAIN_ID#
+export DRA_SERVICE_LIST=\"#SERVICE_LIST#\"
+export DRA_ENABLE_BOUND_SERVICE=#ENABLE_BOUND_SERVICE#
+export DRA_ENABLE_COMPARE_APPS=#ENABLE_COMPARE_APPS#
+export DRA_APP_DESTINATION=#APP_DESTINATION#
+export DRA_MANIFEST_FILE=\"#APP_DESTINATION_MANIFEST#\"
+export DRA_COMPARE_MEMORY=#COMPARE_MEMORY#
+export DRA_COMPARE_DISK_QUOTA=#COMPARE_DISK_QUOTA#
+export DRA_COMPARE_INSTANCES=#COMPARE_INSTANCES#
+export DRA_COMPARE_ENV_VERSION=#COMPARE_ENV_VERSION#
+export DRA_COMPARE_SERVICES=#COMPARE_SERVICES#
+export DRA_APP_NOTDESTINATION=#APP_NOTDESTINATION#
+        
+#check for defined host/port, if null set defaults
+if [ -z \"$HOST\" ]; then
+    export HOST=ondemand.saucelabs.com
+fi
+        
+if [ -z \"$PORT\" ]; then
+    export PORT=80
+fi
+
+function custom_cmd {
+
+    eval #COMMAND#
+    RESULT=$?
+
+    if [ $RESULT -ne 0 ]; then
+        exit 1
+    fi
+}
+    
+export -f custom_cmd
+
+. $EXT_DIR/execute.sh
+RESULT=$?
+        
+if [ $RESULT -ne 0 ]; then
+    exit 1
+fi
+
+custom_cmd
+
+    "},
+    "project": "https://hub.jazz.net/project/alchemy/Alchemy-Ostanes",
+    "project_example": "https://hub.jazz.net/pipeline/Osthanes/blazemeter_static",
+    "project_contact": "vjegase@us.ibm.com"
+}
