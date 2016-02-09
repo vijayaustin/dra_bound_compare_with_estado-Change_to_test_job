@@ -1,5 +1,5 @@
 {
-    "id": "ibm.devops.services.pipeline.dra_deploy_extn_DEPLOY",
+    "id": "ibm.devops.services.pipeline.dra_deploy_extn",
     "version": 1,
     "name_key": "ExtName",
     "desc_key": "ExtDesc",
